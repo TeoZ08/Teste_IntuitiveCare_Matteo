@@ -1,0 +1,8 @@
+etl/relatorio_final.csv
+__pycache__/
+*.pyc
+.DS_Store
+.env
+venv/
+.venv/
+env/
