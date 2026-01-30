@@ -1,9 +1,8 @@
 import os
 import psycopg2
 import time
-import sys
+import pandas as pd
 
-# configurações do Banco
 DB_CONFIG = {
     "dbname": "intuitive_db",
     "user": "user_teste",
@@ -13,53 +12,50 @@ DB_CONFIG = {
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_FILE = os.path.join(BASE_DIR, "relatorio_final.csv")
+FILE_DEMONSTRACOES = os.path.join(BASE_DIR, "demonstracoes_contabeis.csv")
+FILE_OPERADORAS = os.path.join(BASE_DIR, "operadoras.csv")
+
+def carregar_csv(cursor, file_path, table_name, columns=None):
+    if not os.path.exists(file_path):
+        print(f"Arquivo nao encontrado: {file_path}")
+        return
+
+    print(f"Carregando {table_name}...")
+    start = time.time()
+    
+    with open(file_path, 'r', encoding='utf-8') as f:
+        cols_sql = f"({','.join(columns)})" if columns else ""
+        sql = f"COPY {table_name} {cols_sql} FROM stdin WITH CSV HEADER DELIMITER ',' NULL ''"
+        cursor.copy_expert(sql, f)
+        
+    print(f"Tabela {table_name} carregada em {time.time() - start:.2f}s")
 
 def carregar_dados():
-    if not os.path.exists(CSV_FILE):
-        print(f"ERRO: Arquivo {CSV_FILE} não encontrado.")
-        print("Rode o 'main_etl.py' primeiro!")
-        sys.exit(1)
-
-    print("Conectando ao PostgreSQL...")
     conn = None
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
-        print("Limpando tabela (TRUNCATE)...")
-        cur.execute("TRUNCATE TABLE demonstracoes_contabeis;")
+        print("Limpando dados antigos...")
+        cur.execute("TRUNCATE TABLE demonstracoes_contabeis, operadoras RESTART IDENTITY;")
         conn.commit()
 
-        print("Iniciando carga via COPY STREAM (Alta Performance)...")
-        start_time = time.time()
-        
-        with open(CSV_FILE, 'r', encoding='utf-8') as f:
-            # SQLpara lidar com NULLs se necessário
-            sql = "COPY demonstracoes_contabeis FROM stdin WITH CSV HEADER DELIMITER ',' NULL ''"
-            cur.copy_expert(sql, f)
-            
+        # carrega operadoras (lendo colunas do csv para garantir ordem)
+        if os.path.exists(FILE_OPERADORAS):
+            df_op = pd.read_csv(FILE_OPERADORAS, nrows=0)
+            carregar_csv(cur, FILE_OPERADORAS, "operadoras", list(df_op.columns))
+
+        # carrega demonstracoes
+        carregar_csv(cur, FILE_DEMONSTRACOES, "demonstracoes_contabeis")
+
         conn.commit()
-        end_time = time.time()
-        
-        # estatísticas finais
-        duration = end_time - start_time
-        cur.execute("SELECT COUNT(*) FROM demonstracoes_contabeis;")
-        qtd = cur.fetchone()[0]
-        
-        print(f"CARGA COMPLETA!")
-        print(f"Tempo: {duration:.2f} segundos")
-        print(f"Registros: {qtd}")
-        print(f"Velocidade: {int(qtd/duration)} linhas/segundo")
+        print("Carga finalizada com sucesso.")
 
     except Exception as e:
-        print(f"Erro durante a carga: {e}")
-        if conn:
-            conn.rollback()
+        print(f"Erro critico: {e}")
+        if conn: conn.rollback()
     finally:
-        if conn:
-            cur.close()
-            conn.close()
+        if conn: conn.close()
 
 if __name__ == "__main__":
     carregar_dados()
