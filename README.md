@@ -12,16 +12,58 @@ O sistema foi desenvolvido seguindo uma arquitetura modular baseada em 4 Pilares
 
 ```mermaid
 graph TD
-    subgraph ETL [ETL e Dados]
-        ANS[Portal Dados Abertos ANS] -->|Python + Pandas| CSVs[Arquivos CSV Limpos]
-        CSVs -->|Loader Script| DB[(PostgreSQL Docker)]
+    classDef python fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1;
+    classDef database fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    classDef file fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,stroke-dasharray: 5 5,color:#e65100;
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef infra fill:#eceff1,stroke:#455a64,stroke-width:2px,stroke-dasharray: 3 3,color:#37474f;
+    classDef web fill:#fff9c4,stroke:#fbc02d,stroke-width:2px,color:#f57f17;
+
+    subgraph EXTERNO ["🌐 Fonte de Dados"]
+        ANS_Site[Portal Dados Abertos ANS]:::external
     end
 
-    subgraph APP [Aplicacao]
-        DB <-->|Psycopg2| API[Backend FastAPI]
-        API <-->|Axios| Front[Frontend Vue.js 3]
+    subgraph APP_ETL ["⚙️ Engenharia de Dados (ETL)"]
+        direction TB
+        MainETL("etl/main_etl.py"):::python
+
+        subgraph TEMP ["📂 Staging (CSV)"]
+            DemoCSV(demonstracoes_contabeis.csv):::file
+            OpCSV(operadoras.csv):::file
+        end
+
+        Loader("etl/loader.py"):::python
     end
 
+    subgraph INFRA_DOCKER ["🐳 Infraestrutura"]
+        DockerComp("docker-compose.yml"):::infra
+
+        subgraph DB_SERVICE ["Container: intuitive_postgres"]
+            InitSQL("sql/init.sql"):::database
+            Postgres[("PostgreSQL DB")]:::database
+        end
+    end
+
+    subgraph WEB_APP ["🚀 Aplicação Web"]
+        direction TB
+        API("🐍 Backend (FastAPI)"):::python
+        Front("🎨 Frontend (Vue.js)"):::web
+    end
+
+    subgraph ANALYTICS ["📊 Análise"]
+        Queries("sql/queries_analiticas.sql"):::external
+    end
+
+    ANS_Site -->|Download ZIPs| MainETL
+    MainETL -->|Gera| DemoCSV
+    MainETL -->|Gera| OpCSV
+    DemoCSV -->|Lê| Loader
+    OpCSV -->|Lê| Loader
+    Loader -- "COPY (Alta Performance)" --> Postgres
+    InitSQL -.->|Cria Tabelas no Boot| Postgres
+    Postgres <-->|Lê Dados| API
+    API <-->|JSON / Axios| Front
+    Queries -.->|Consulta Ad-Hoc| Postgres
 ```
 
 ### Tecnologias Utilizadas
