@@ -59,3 +59,17 @@ WHERE d_fim.data_referencia = inicio_fim.data_fim
   AND d_ini.data_referencia = inicio_fim.data_ini
 ORDER BY crescimento_pct DESC
 LIMIT 10;
+
+-- Query 4: Desvio Padrão das Despesas (Identificando Volatilidade)
+-- Calcula a média e o desvio padrão das despesas por operadora
+SELECT 
+    op.razao_social,
+    AVG(dc.vl_saldo_final) as media_despesa,
+    STDDEV(dc.vl_saldo_final) as desvio_padrao
+FROM demonstracoes_contabeis dc
+JOIN operadoras op ON dc.reg_ans = op.reg_ans
+WHERE dc.cd_conta_contabil LIKE '4%'
+GROUP BY op.razao_social
+HAVING STDDEV(dc.vl_saldo_final) > 0
+ORDER BY desvio_padrao DESC
+LIMIT 10;

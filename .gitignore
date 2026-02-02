@@ -11,4 +11,4 @@ env/
 # Arquivos gerados pelo ETL
 consolidado_despesas.zip
 consolidado_despesas.csv
-postman_collection.json
+intuitive_care.postman_collection.json

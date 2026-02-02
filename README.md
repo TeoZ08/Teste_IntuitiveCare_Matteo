@@ -157,13 +157,25 @@ npm run dev
 
 ---
 
+## Tratamento de Dados e Inconsistências
+
+Durante a etapa de ETL (Extração, Transformação e Carga), foram aplicadas as seguintes estratégias para lidar com a qualidade dos dados da ANS:
+
+- **Validação de CNPJ:** Optei por **não descartar** registros com CNPJs inválidos ou duplicados durante a importação. A justificativa é preservar a integridade histórica dos dados financeiros. Em um cenário real de produção, esses registros seriam marcados com uma flag `is_suspect` para auditoria posterior, em vez de serem excluídos silenciosamente.
+- **Valores Negativos:** Mantive os valores negativos nas demonstrações contábeis (contas de despesa), pois contabilmente podem representar estornos, ajustes de exercícios anteriores ou prejuízos operacionais legítimos. Forçar a conversão para zero distorceria o balanço real da operadora.
+- **Encoding:** Foi realizado tratamento específico para arquivos antigos (Latin-1) e novos (UTF-8) para corrigir caracteres especiais (mojibake) nos nomes das operadoras.
+
 ## Decisões de Design e Trade-offs
 
 - **FastAPI vs Flask:** Optei pelo FastAPI devido à sua validação de dados nativa (Pydantic) e geração automática de documentação, o que acelerou o desenvolvimento e facilita testes.
+
 - **ETL em Python vs SQL Puro:** O tratamento dos arquivos da ANS exigiu lógica complexa de limpeza (erros de encoding, colunas renomeadas), o que seria inviável fazer apenas com SQL. O Pandas ofereceu a flexibilidade necessária.
+
 - **Paginação no Backend:** Para garantir performance, a paginação é feita diretamente na query SQL (LIMIT/OFFSET), evitando trafegar milhares de registros desnecessários para o frontend.
 
 * **Tipo de Dados Monetário (DECIMAL vs FLOAT):** Optei por utilizar `NUMERIC(20,2)` (Decimal) no PostgreSQL para armazenar os valores monetários. O tipo `FLOAT` utiliza ponto flutuante binário e pode apresentar erros de precisão em operações financeiras. O `NUMERIC` garante a exatidão dos centavos, essencial para demonstrativos contábeis.
+
+* **Busca Server-Side:** Implementada diretamente no Banco de Dados (SQL `ILIKE`) com paginação. Optei por não filtrar no Frontend (Client-side) para garantir performance e escalabilidade caso o volume de operadoras cresça para milhares de registros, evitando travar o navegador do usuário.
 
 ---
 
