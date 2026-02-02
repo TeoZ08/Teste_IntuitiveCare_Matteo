@@ -1,18 +1,28 @@
--- query 1: top 10 operadoras com maior despesa no ultimo trimestre
+-- Query 1: Operadoras com despesas ACIMA DA MÉDIA do último trimestre
+WITH despesas_ultimo_trimestre AS (
+    SELECT 
+        op.razao_social,
+        op.reg_ans,
+        SUM(dc.vl_saldo_final) as total_despesas
+    FROM demonstracoes_contabeis dc
+    JOIN operadoras op ON dc.reg_ans = op.reg_ans
+    WHERE 
+        dc.cd_conta_contabil LIKE '4%' 
+        AND dc.data_referencia = (SELECT MAX(data_referencia) FROM demonstracoes_contabeis)
+    GROUP BY op.razao_social, op.reg_ans
+),
+media_despesas AS (
+    SELECT AVG(total_despesas) as media_geral FROM despesas_ultimo_trimestre
+)
 SELECT 
-    op.razao_social,
-    op.reg_ans,
-    SUM(dc.vl_saldo_final) as total_despesas
-FROM demonstracoes_contabeis dc
-JOIN operadoras op ON dc.reg_ans = op.reg_ans
-WHERE 
-    dc.cd_conta_contabil LIKE '4%' 
-    AND dc.data_referencia = (SELECT MAX(data_referencia) FROM demonstracoes_contabeis)
-GROUP BY op.razao_social, op.reg_ans
-ORDER BY total_despesas DESC
-LIMIT 10;
+    d.razao_social,
+    d.reg_ans,
+    d.total_despesas
+FROM despesas_ultimo_trimestre d, media_despesas m
+WHERE d.total_despesas > m.media_geral
+ORDER BY d.total_despesas DESC;
 
--- query 2: despesas por UF
+-- Query 2: Despesas por UF (JÁ ESTAVA CERTO)
 SELECT 
     op.uf,
     SUM(dc.vl_saldo_final) as total_despesas_uf
@@ -22,7 +32,7 @@ WHERE dc.cd_conta_contabil LIKE '4%'
 GROUP BY op.uf
 ORDER BY total_despesas_uf DESC;
 
--- query 3: evolucao das despesas (primeiro vs ultimo trimestre)
+-- Query 3: Evolução das despesas (Crescimento %) (JÁ ESTAVA CERTO)
 WITH despesas_trimestrais AS (
     SELECT 
         reg_ans,
@@ -48,4 +58,4 @@ CROSS JOIN inicio_fim
 WHERE d_fim.data_referencia = inicio_fim.data_fim
   AND d_ini.data_referencia = inicio_fim.data_ini
 ORDER BY crescimento_pct DESC
-LIMIT 5;
+LIMIT 10;

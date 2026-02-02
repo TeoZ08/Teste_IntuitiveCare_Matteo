@@ -163,6 +163,8 @@ npm run dev
 - **ETL em Python vs SQL Puro:** O tratamento dos arquivos da ANS exigiu lógica complexa de limpeza (erros de encoding, colunas renomeadas), o que seria inviável fazer apenas com SQL. O Pandas ofereceu a flexibilidade necessária.
 - **Paginação no Backend:** Para garantir performance, a paginação é feita diretamente na query SQL (LIMIT/OFFSET), evitando trafegar milhares de registros desnecessários para o frontend.
 
+* **Tipo de Dados Monetário (DECIMAL vs FLOAT):** Optei por utilizar `NUMERIC(20,2)` (Decimal) no PostgreSQL para armazenar os valores monetários. O tipo `FLOAT` utiliza ponto flutuante binário e pode apresentar erros de precisão em operações financeiras. O `NUMERIC` garante a exatidão dos centavos, essencial para demonstrativos contábeis.
+
 ---
 
 **Desenvolvido por Matteo**

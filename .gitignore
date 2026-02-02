@@ -8,3 +8,7 @@ __pycache__/
 venv/
 .venv/
 env/
+# Arquivos gerados pelo ETL
+consolidado_despesas.zip
+consolidado_despesas.csv
+postman_collection.json
