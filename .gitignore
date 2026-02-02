@@ -1,4 +1,6 @@
 etl/relatorio_final.csv
+etl/demonstracoes_contabeis.csv
+etl/operadoras.csv
 __pycache__/
 *.pyc
 .DS_Store

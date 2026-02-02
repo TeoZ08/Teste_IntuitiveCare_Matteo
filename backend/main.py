@@ -140,7 +140,7 @@ def estatisticas_gerais():
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     try:
-        # top 5 operadoras (ultimo periodo)
+        # 1. top 5 operadoras (ultimo periodo)
         cur.execute("""
             SELECT op.razao_social, op.uf, SUM(dc.vl_saldo_final) as total
             FROM demonstracoes_contabeis dc
@@ -153,7 +153,7 @@ def estatisticas_gerais():
         """)
         top5 = cur.fetchall()
         
-        # distribuicao por UF
+        # 2. distribuicao por UF
         cur.execute("""
             SELECT op.uf, SUM(dc.vl_saldo_final) as total
             FROM demonstracoes_contabeis dc
@@ -164,9 +164,18 @@ def estatisticas_gerais():
         """)
         ufs = cur.fetchall()
 
+        cur.execute("""
+            SELECT SUM(vl_saldo_final) as total 
+            FROM demonstracoes_contabeis 
+            WHERE cd_conta_contabil LIKE '4%'
+        """)
+        row = cur.fetchone()
+        total_geral = row['total'] if row and row['total'] else 0
+
         return {
             "top_5": top5,
-            "por_uf": ufs
+            "por_uf": ufs,
+            "total_despesas_periodo": total_geral
         }
     finally:
         cur.close()
