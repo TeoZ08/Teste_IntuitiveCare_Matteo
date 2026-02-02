@@ -6,7 +6,7 @@ import { RouterView } from "vue-router";
   <header>
     <div class="wrapper">
       <nav>
-        <RouterLink to="/">Dashboard</RouterLink> |
+        <RouterLink to="/">Dashboard</RouterLink>
         <RouterLink to="/operadoras">Operadoras</RouterLink>
       </nav>
     </div>
@@ -17,34 +17,51 @@ import { RouterView } from "vue-router";
   </main>
 </template>
 
-<style scoped>
-header {
-  background-color: #333;
-  padding: 1rem;
-  margin-bottom: 20px;
+<style>
+/* --- ESTILO GLOBAL (Reset + Cores) --- */
+body {
+  margin: 0;
+  background-color: #21203f; /* Color 1 - Fundo */
+  color: #fff1ce; /* Color 2 - Texto */
+  font-family: "Poppins", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-nav {
-  text-align: center;
-}
-nav a {
-  color: white;
+
+a {
+  color: #e7bfa5; /* Color 3 - Links */
   text-decoration: none;
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin: 0 10px;
+  transition: opacity 0.3s;
 }
-nav a.router-link-exact-active {
-  color: #42b983;
+
+a:hover {
+  opacity: 0.8;
 }
 </style>
 
-<style>
-body {
-  margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  background-color: #f5f7fa; /* Um cinza bem clarinho de fundo fica mais elegante */
-  color: #2c3e50;
+<style scoped>
+header {
+  background-color: #4b3c5d; /* Color 5 - Navbar */
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+nav a {
+  color: #fff1ce; /* Color 2 */
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+nav a.router-link-exact-active {
+  color: #e7bfa5; /* Color 3 - Ativo */
+  border-bottom: 2px solid #e7bfa5;
 }
 </style>

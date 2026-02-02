@@ -65,13 +65,10 @@ def processar_etl():
     try:
         r = requests.get(URL_CADASTRO, timeout=60)
         if r.status_code == 200:
-            df = pd.read_csv(io.BytesIO(r.content), sep=';', encoding='latin1', dtype=str, on_bad_lines='skip')
+            df = pd.read_csv(io.BytesIO(r.content), sep=';', encoding='utf-8', dtype=str, on_bad_lines='skip')
             df.columns = [limpar_nome_coluna(c) for c in df.columns]
-            
-            # MAPA CORRIGIDO AQUI! 
-            # Trocamos REGISTRO_ANS por REGISTRO_OPERADORA
             col_map = {
-                'REGISTRO_OPERADORA': 'reg_ans',  # <--- CORREÇÃO
+                'REGISTRO_OPERADORA': 'reg_ans',
                 'CNPJ': 'cnpj', 
                 'RAZAO_SOCIAL': 'razao_social',
                 'NOME_FANTASIA': 'nome_fantasia', 
@@ -94,7 +91,7 @@ def processar_etl():
             
             # Verificação ajustada para a nova coluna
             if 'REGISTRO_OPERADORA' not in cols_existentes:
-                print(f"❌ ERRO CRÍTICO: Chave primária não encontrada!")
+                print(f"ERRO CRÍTICO: Chave primária não encontrada!")
                 print(f"   Colunas disponiveis: {list(df.columns)}")
                 sys.exit(1)
 
