@@ -37,3 +37,14 @@ nav a.router-link-exact-active {
   color: #42b983;
 }
 </style>
+
+<style>
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background-color: #f5f7fa; /* Um cinza bem clarinho de fundo fica mais elegante */
+  color: #2c3e50;
+}
+</style>
